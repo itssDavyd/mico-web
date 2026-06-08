@@ -3,7 +3,7 @@
   "scope": "/",
   "name": "MICO",
   "short_name": "MICO",
-  "description": "Meeting Intelligence & Content Organizer",
+  "description": "Actas de reunión en PDF desde audio",
   "display": "standalone",
   "start_url": "/",
   "icons": [

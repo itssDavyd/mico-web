@@ -1,5 +1,5 @@
 <script lang="ts">
-  import AudioRecorder from "$lib/components/audio-recorder.svelte";
+  import MicoApp from "$lib/components/MicoApp.svelte";
 </script>
 
-<AudioRecorder />
+<MicoApp />

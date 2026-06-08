@@ -1,11 +1,10 @@
 <script lang="ts">
   import "../app.css";
-  import favicon from "$lib/assets/favicon.ico";
   import { onMount } from "svelte";
 
   onMount(() => {
     if ("serviceWorker" in navigator) {
-      navigator.serviceWorker.register("/service-worker.js");
+      navigator.serviceWorker.register("/service-worker.js").catch(() => {});
     }
   });
 
@@ -13,7 +12,7 @@
 </script>
 
 <svelte:head>
-  <link rel="icon" href={favicon} />
+  <link rel="icon" href="/logo_aitodetec.png" />
 </svelte:head>
 
 {@render children()}

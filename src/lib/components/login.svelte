@@ -1,53 +1,75 @@
 <script lang="ts">
-  export let onLoginSuccess: () => void;
-  let username = "";
-  let password = "";
-  let error: string | null = null;
-  const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
+  import { DEV_CREDENTIALS_HINT, isDevMockEnabled } from "$lib/api/dev-auth";
 
-  const login = async () => {
-    error = null;
-    try {
-      const res = await fetch(`${BACKEND_URL}/auth/login`, {
-        method: "POST",
-        credentials: "include",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ username, password }),
-      });
+  interface Props {
+    onLogin: (username: string, password: string) => Promise<void>;
+    error?: string | null;
+    loading?: boolean;
+  }
 
-      if (!res.ok) throw new Error("Usuario o contraseña incorrectos");
-    } catch (err) {
-      error = err instanceof Error ? err.message : "Error desconocido";
-      console.warn("Error al iniciar sesión:", err);
-    }
+  let { onLogin, error = null, loading = false }: Props = $props();
 
-    onLoginSuccess?.();
-  };
+  const isDev = isDevMockEnabled();
+  let username = $state(isDev ? "admin" : "");
+  let password = $state(isDev ? "admin" : "");
+
+  async function submit(e: Event) {
+    e.preventDefault();
+    await onLogin(username, password);
+  }
 </script>
 
-<div
-  class="p-8 max-w-sm mx-auto bg-slate-800 rounded-xl border border-slate-700"
->
-  <h2 class="text-white text-xl mb-4">Inicio de Sesión</h2>
-  {#if error}
-    <p class="text-red-400 mb-2">{error}</p>
-  {/if}
-  <input
-    type="text"
-    placeholder="Usuario"
-    bind:value={username}
-    class="w-full mb-2 p-2 rounded border border-slate-600 bg-slate-700 text-white"
-  />
-  <input
-    type="password"
-    placeholder="Contraseña"
-    bind:value={password}
-    class="w-full mb-4 p-2 rounded border border-slate-600 bg-slate-700 text-white"
-  />
-  <button
-    on:click={login}
-    class="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 rounded"
-  >
-    Acceder
-  </button>
+<div class="glass-strong mx-5 rounded-3xl p-7">
+  <div class="mb-6 text-center">
+    <h2 class="text-lg font-semibold text-ink">Iniciar sesión</h2>
+    <p class="mt-1 text-sm text-ink-muted">Introduce tus credenciales</p>
+  </div>
+
+  <form onsubmit={submit} class="space-y-4">
+    <div>
+      <label for="username" class="mb-1.5 block text-xs font-semibold text-ink-muted">
+        Usuario
+      </label>
+      <input
+        id="username"
+        type="text"
+        bind:value={username}
+        autocomplete="username"
+        required
+        class="input-glass w-full rounded-xl px-4 py-3.5 text-[15px] text-ink"
+        placeholder="Tu usuario"
+      />
+    </div>
+    <div>
+      <label for="password" class="mb-1.5 block text-xs font-semibold text-ink-muted">
+        Contraseña
+      </label>
+      <input
+        id="password"
+        type="password"
+        bind:value={password}
+        autocomplete="current-password"
+        required
+        class="input-glass w-full rounded-xl px-4 py-3.5 text-[15px] text-ink"
+        placeholder="Tu contraseña"
+      />
+    </div>
+    {#if isDev}
+      <p class="glass rounded-xl px-4 py-3 text-xs text-ink-muted">
+        Desarrollo: <strong class="text-ink">{DEV_CREDENTIALS_HINT}</strong>
+      </p>
+    {/if}
+    {#if error}
+      <p class="rounded-xl bg-rose-50/80 px-4 py-3 text-sm text-rose-700 ring-1 ring-rose-100">
+        {error}
+      </p>
+    {/if}
+    <button
+      type="submit"
+      disabled={loading}
+      class="btn-glass w-full rounded-2xl py-4 text-[15px] font-semibold disabled:opacity-50"
+    >
+      {loading ? "Entrando…" : "Entrar"}
+    </button>
+  </form>
 </div>
