@@ -6,7 +6,6 @@ services:
       context: .
       dockerfile: Dockerfile
       args:
-        # Inlined at build time — override: VITE_BACKEND_URL=https://api.example.com docker compose build
         VITE_BACKEND_URL: ${VITE_BACKEND_URL:-http://localhost:8000}
     image: mico-web:latest
     container_name: mico-web
