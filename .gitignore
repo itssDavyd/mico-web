@@ -91,4 +91,14 @@ $RECYCLE.BIN/
 *.lnk
 
 node_modules
-.vercel
+
+### SvelteKit build output ###
+build/
+
+### pnpm ###
+.pnpm-store/
+
+### Environment ###
+.env
+.env.*
+!.env.example

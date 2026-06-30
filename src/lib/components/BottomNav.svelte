@@ -18,7 +18,7 @@
 
 <nav class="fixed bottom-0 left-0 right-0 z-50 px-5 pb-safe" aria-label="Navegación">
   <div class="glass-nav mx-auto flex max-w-md items-center justify-around rounded-[22px] px-1 py-1.5">
-    {#each tabs as tab}
+    {#each tabs as tab (tab.id)}
       <button
         type="button"
         onclick={() => onChange(tab.id)}

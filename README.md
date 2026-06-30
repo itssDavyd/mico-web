@@ -15,9 +15,10 @@ MICO is an intelligent web recording application that uses artificial intelligen
 
 ## Technology Stack
 
-- **Framework**: SvelteKit
+- **Framework**: SvelteKit (Svelte 5) — fully prerendered static SPA + PWA
+- **Styling**: TailwindCSS v4 + Skeleton UI
 - **Package manager**: pnpm
-- **Frontend**: Svelte
+- **Deployment**: Docker (nginx)
 
 ## Installation
 
@@ -40,13 +41,80 @@ pnpm dev -- --open
 
 ## Build
 
-To create a production build:
+MICO is a **frontend-only** app. It is fully prerendered to static files
+(`@sveltejs/adapter-static`) and talks to a separate backend directly from the
+browser. To create a production build:
 
 ```sh
 pnpm build
 ```
 
-You can preview the production build with `pnpm preview`.
+The static output is written to `build/`. You can preview it with `pnpm preview`.
+
+> ⚠️ `VITE_BACKEND_URL` is **inlined at build time** by Vite. Set it before
+> building (via `.env` or the shell environment) — changing it afterwards has no
+> effect on an already-built bundle.
+
+## Configuration
+
+| Variable            | Description                                  | Default                 |
+| ------------------- | -------------------------------------------- | ----------------------- |
+| `VITE_BACKEND_URL`  | URL of the backend (transcription/PDF API).  | `http://localhost:8000` |
+
+Copy `.env.example` to `.env` for local development:
+
+```sh
+cp .env.example .env
+```
+
+## Deployment (Docker on a VPS)
+
+The app ships as a static site served by **nginx** in a small multi-stage image.
+
+### 1. Build the image
+
+Pass `VITE_BACKEND_URL` as a build arg (inlined at build time):
+
+```sh
+# With docker compose (reads VITE_BACKEND_URL from the shell/.env):
+VITE_BACKEND_URL=https://api.your-domain.com docker compose build
+
+# Or with plain docker:
+docker build \
+  --build-arg VITE_BACKEND_URL=https://api.your-domain.com \
+  -t mico-web:latest .
+```
+
+### 2. Run it
+
+```sh
+# docker compose (recommended):
+VITE_BACKEND_URL=https://api.your-domain.com docker compose up -d
+
+# Or plain docker:
+docker run -d --name mico-web -p 8080:80 mico-web:latest
+```
+
+The container listens on port **80** internally. `docker-compose.yml` maps it to
+host port **8080** by default — override with the `MICO_WEB_PORT` env var. Put a
+reverse proxy (nginx/Traefik/Caddy) with TLS in front of it for production.
+
+### Notes & caveats
+
+- **HTTPS is required** for microphone access in the browser (except on
+  `localhost`). Serve the app over TLS in production.
+- **Cookies / CORS**: auth uses cookies with `credentials: "include"`. If the
+  frontend and backend are on different origins, the backend must send
+  `Access-Control-Allow-Origin: <frontend origin>`,
+  `Access-Control-Allow-Credentials: true`, and set cookies with
+  `SameSite=None; Secure` (which also requires HTTPS).
+- To change the backend URL you must **rebuild** the image.
+
+### Installing as a PWA ("Add to Home Screen")
+
+MICO is an installable PWA when served over **HTTPS**. Browsers will offer
+"Add to Home Screen" / "Install app" using the bundled `manifest.json`, service
+worker (`sw.js`), and app icons.
 
 ---
 
